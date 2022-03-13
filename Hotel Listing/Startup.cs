@@ -1,7 +1,10 @@
+using Hotel_Listing.Configuration;
+using Hotel_Listing.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,16 +30,21 @@ namespace Hotel_Listing
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
 
+            services.AddDbContext<DataContext>(option =>
+
+                option.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"))
+            );
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             });
+            services.AddAutoMapper(typeof(MapperIntializer));
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Hotel_Listing", Version = "v1" });
             });
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,7 +56,6 @@ namespace Hotel_Listing
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Hotel_Listing v1"));
             }
-
             app.UseHttpsRedirection();
             app.UseCors("AllowAll");
             app.UseRouting();
